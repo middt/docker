@@ -1,0 +1,38 @@
+PUT /apisix/admin/plugin_metadata/error-log-logger HTTP/1.1
+Host: 127.0.0.1:9181
+Content-Type: text/plain
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+
+{
+   "kafka":{
+      "brokers":[
+         {
+            "host":"redpanda",
+            "port":9092
+         }
+      ],
+      "kafka_topic":"apisix_error_dmz"
+   },
+   "level":"DEBUG",
+   "inactive_timeout":1
+}
+
+###
+PUT /apisix/admin/plugin_metadata/error-log-logger HTTP/1.1
+Host: 127.0.0.1:9182
+Content-Type: text/plain
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+
+{
+   "kafka":{
+      "brokers":[
+         {
+            "host":"redpanda",
+            "port":9092
+         }
+      ],
+      "kafka_topic":"apisix_error_internal"
+   },
+   "level":"DEBUG",
+   "inactive_timeout":1
+}

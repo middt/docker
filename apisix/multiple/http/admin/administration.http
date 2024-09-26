@@ -1,0 +1,13 @@
+@apisix-admin-url=localhost:9182
+@apisix-apikey=edd1c9f034335f136f87ad84b625c8f1
+
+GET /apisix/admin/routes HTTP/1.1
+Host: {{apisix-admin-url}}
+X-API-KEY: {{apisix-apikey}}
+Content-Type: text/plain
+
+###
+GET /apisix/admin/routes HTTP/1.1
+Host: {{apisix-admin-url}}
+X-API-KEY: {{apisix-apikey}}
+Content-Type: text/plain

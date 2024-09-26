@@ -1,0 +1,101 @@
+PUT /apisix/admin/routes/4 HTTP/1.1
+Host: localhost:9181
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+Content-Type: text/plain
+
+{
+  "uri": "/public-serverless/*",
+  "name": "public-serverless",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on",
+        "options": {
+          "fraction": 0,
+          "root": {
+            "name": "always_off"
+          }
+        }
+      }
+    },
+    "proxy-rewrite": {
+      "regex_uri": [
+        "^/public-serverless/(.*)",
+        "/private-serverless/$1"
+      ],
+      "use_real_request_uri_unsafe": false
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "host.docker.internal",
+        "port": 9082,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin",
+    "hash_on": "vars",
+    "scheme": "http",
+    "pass_host": "pass"
+  },
+  "status": 1
+}
+###
+PUT /apisix/admin/routes/4 HTTP/1.1
+Host: localhost:9182
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+Content-Type: text/plain
+
+{
+  "uri": "/private-serverless/*",
+  "name": "private-serverless",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on",
+        "options": {
+          "fraction": 0,
+          "root": {
+            "name": "always_off"
+          }
+        }
+      }
+    },
+    "proxy-rewrite": {
+      "regex_uri": [
+        "^/private-serverless/(.*)",
+        "/$1"
+      ],
+      "use_real_request_uri_unsafe": false
+    },
+    "serverless-pre-function": {
+      "disable": false,
+      "functions": [
+        "return function(conf, ctx) local http = require(\"resty.http\") local core = require(\"apisix.core\") local parentheaders = ngx.req.get_headers() local httpc = http.new() local res, err = httpc:request_uri(\"http://host.docker.internal:4400/resource\", { method = \"GET\", headers =parentheaders }) if not res then core.log.error(\"Failed to send webhook: \", err) return 500, err end return conf.status, conf.body end"
+      ],
+      "phase": "rewrite"
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "host.docker.internal",
+        "port": 4400,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin",
+    "hash_on": "vars",
+    "scheme": "http",
+    "pass_host": "pass"
+  },
+  "status": 1
+}
+###

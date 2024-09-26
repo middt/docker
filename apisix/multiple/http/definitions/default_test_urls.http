@@ -1,0 +1,61 @@
+PUT /apisix/admin/routes/1 HTTP/1.1
+Host: localhost:9181
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+Content-Type: text/plain
+
+{
+  "uri": "/anything/*",
+  "name": "default",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on"
+      }
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "httpbin.org",
+        "port": 80,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin"
+  },
+  "status": 1
+}
+###
+PUT /apisix/admin/routes/1 HTTP/1.1
+Host: localhost:9182
+X-API-KEY: edd1c9f034335f136f87ad84b625c8f1
+Content-Type: text/plain
+
+{
+  "uri": "/anything/*",
+  "name": "default",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on"
+      }
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "httpbin.org",
+        "port": 80,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin"
+  },
+  "status": 1
+}

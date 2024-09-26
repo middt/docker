@@ -1,0 +1,132 @@
+@apisix-admin-url=localhost:9182
+@apisix-apikey=edd1c9f034335f136f87ad84b625c8f1
+
+PUT /apisix/admin/routes/1 HTTP/1.1
+Host: {{apisix-admin-url}}
+X-API-KEY: {{apisix-apikey}}
+Content-Type: text/plain
+
+{
+  "uri": "/anything/*",
+  "name": "default",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on",
+        "options": {
+          "fraction": 0,
+          "root": {
+            "name": "always_off"
+          }
+        }
+      }
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "httpbin.org",
+        "port": 80,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin",
+    "hash_on": "vars",
+    "scheme": "http",
+    "pass_host": "pass"
+  },
+  "status": 1
+}
+###
+PUT /apisix/admin/routes/2 HTTP/1.1
+Host: {{apisix-admin-url}}
+X-API-KEY: {{apisix-apikey}}
+Content-Type: text/plain
+
+{
+  "uri": "/private/anything/*",
+  "name": "private-default",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on"
+      }
+    },
+    "proxy-rewrite": {
+      "regex_uri": [
+        "^/private/anything/(.*)",
+        "/anything/$1/internal"
+      ],
+      "use_real_request_uri_unsafe": false
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "httpbin.org",
+        "port": 80,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin",
+    "hash_on": "vars",
+    "scheme": "http",
+    "pass_host": "pass"
+  },
+  "status": 1
+}
+###
+PUT /apisix/admin/routes/3 HTTP/1.1
+Host: {{apisix-admin-url}}
+X-API-KEY: {{apisix-apikey}}
+Content-Type: text/plain
+
+{
+  "uri": "/private-local/*",
+  "name": "private-local-api",
+  "methods": [
+    "GET"
+  ],
+  "plugins": {
+    "opentelemetry": {
+      "sampler": {
+        "name": "always_on",
+        "options": {
+          "fraction": 0,
+          "root": {
+            "name": "always_off"
+          }
+        }
+      }
+    },
+    "proxy-rewrite": {
+      "regex_uri": [
+        "^/private-local/(.*)",
+        "/$1"
+      ],
+      "use_real_request_uri_unsafe": false
+    }
+  },
+  "upstream": {
+    "nodes": [
+      {
+        "host": "host.docker.internal",
+        "port": 4400,
+        "weight": 1
+      }
+    ],
+    "type": "roundrobin",
+    "hash_on": "vars",
+    "scheme": "http",
+    "pass_host": "pass"
+  },
+  "status": 1
+}
+
+###
